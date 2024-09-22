@@ -38,6 +38,6 @@ def post_answer(token, answer, answer_url='https://zadania.aidevs.pl/answer'):
     
     response = requests.post(post_url, json=answer)
     if response.status_code == 200:
-        return response.json()
+        return response
     else:
         raise Exception(f"Failed to post JSON data: {response.status_code}, {response.text}")
