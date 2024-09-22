@@ -1,33 +1,39 @@
-import get_task_token 
+import requests
+import json
+import yaml 
+import os.path
 
-
+# Load API keys from file
+def load_task_apikey():
+    with open(os.path.expanduser('/backup/2aidev/.apikeys'), 'r') as file: #temporary path to fix
+        task_apikey = yaml.safe_load(file)
+    return task_apikey['TASK_APIKEY']
+        
 taskName = 'helloapi'
+taskAPI = load_task_apikey()
+url = 'https://zadania.aidevs.pl'+'/token/'+taskName
+
+print(f'Getting {url}, sending {taskAPI}')
 
 
 
-# Proceed with unviersal request methods
-try:
-    token = get_task_token.get_task_token(taskName)
-    print(f"Token dla zadania '{taskName}' to: {token}")
+# Post API auth to receive TOKEN
+#apiToSend = {"apikey": apiKey}
+post_response = requests.post(url, json={"apikey": taskAPI})
 
-    data = get_task_token.get_json(token)
-    print(f"Dane dla zadania '{taskName}' to: {data}")
+response_data = json.loads(post_response.text)
+token = response_data['token']
+print(f'Token zadania:{token}')
 
+# get json task
+getUrl = "https://zadania.aidevs.pl/task/"+token
+getResponse = requests.get(getUrl)
+getResponseToJson = getResponse.json()
+print(getResponseToJson)
 
-    # Extract value of "cookie" field as an answer
-    cookie = data.get("cookie")
-    answer = {"answer": cookie}
-
-    response = get_task_token.post_answer(token, answer)
-    print(f"Odpowiedź dla zadania '{taskName}' to: {answer} ")
-    print(response.status_code)
-    print(response.text)
-
-
-
-except Exception as e:
-    print(f"Error: {e}")
-
-#answerUrl = "https://zadania.aidevs.pl/answer/"+token
-#answerResponse = requests.post(answerUrl, json=answer)
-#print(answerResponse.text)    
+# post 'answer' from getResponse json
+cookie = getResponseToJson.get("cookie")
+answer = {"answer": cookie}
+answerUrl = "https://zadania.aidevs.pl/answer/"+token
+answerResponse = requests.post(answerUrl, json=answer)
+print(answerResponse.text)    

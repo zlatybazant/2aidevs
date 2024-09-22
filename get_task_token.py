@@ -37,7 +37,6 @@ def post_answer(token, answer, answer_url='https://zadania.aidevs.pl/answer'):
     post_url = f"{answer_url}/{token}"
     
     response = requests.post(post_url, json=answer)
-    return response
     if response.status_code == 200:
         return response.json()
     else:
