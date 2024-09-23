@@ -1,4 +1,4 @@
-import requests, os, taskResponse, json
+import requests, taskResponse, json
 
 taskName = 'moderation'
 url = 'https://api.openai.com/v1/moderations'
@@ -15,7 +15,7 @@ try:
 
 # Extract value of "input" field as an answer
     toModerate = data['input']
-	
+# Prepare json body, set headers as moderation docs requires, POST data to API
     body = { "input": toModerate }
     headers = { 'Content-Type': 'application/json', 'Authorization': f'Bearer {key}' }
     request = requests.post(url, json=body, headers=headers)

@@ -15,13 +15,23 @@ try:
     completion = client.chat.completions.create(
 	model="gpt-3.5-turbo",
 	messages=[
-	{"role": "system", "content": "you are a culinary blogger. Please write separate paragraphs for each JSON string. Write response as JSON list, with one short paragraph for each input string"}
+	{"role": "system", "content": " Please write short paraghraph for each JSON chapter title. Output only written responses as a JSON list."},
+        {"role": "user", "content": json.dumps(data)}
 	]
     )
-    output = completion.json()
-    
-    blog = json.loads(output['choices'][0]['message']['content'])
-    
-    #print(f"OAI response: {output}")
+    message_content = completion.choices[0].message.content
+    parsed_content = json.loads(message_content)
+    print(f"OAI response: {message_content}")
+    content_list = parsed_content['blog']
+
+    final_output = {
+	"answer": content_list
+    }
+    final_json = json.dumps(final_output, ensure_ascii=False)
+    print(f"final content: {final_json}")
+
+    response = taskResponse.post_answer(token, final_output)
+    print(response.status_code)
+    print(response.text)
 except Exception as e:
     print(f"Error: {e}")
