@@ -14,6 +14,7 @@ try:
 # Extract value of "cookie" field as an answer
     cookie = data.get("cookie")
     answer = {"answer": cookie}
+	
 
     response = taskResponse.post_answer(token, answer)
     print(f"Odpowiedź dla zadania '{taskName}' to: {answer} ")

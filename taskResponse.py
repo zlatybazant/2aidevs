@@ -9,6 +9,12 @@ def load_apikeys(apikey_file='/backup/2aidev/.apikeys'):
         apikey = yaml.safe_load(file)
     return apikey['TASK_APIKEY']
 
+#Load OpenAI Api key
+def load_OAIkey(apikey_file='/backup/2aidev/.apikeys'):
+    with open(os.path.expanduser(apikey_file), 'r') as file:
+        apikey = yaml.safe_load(file)
+    return apikey['OAI_APIKEY']
+
 # Function to get the token for a given task name
 def get_task_token(taskName, base_url='https://zadania.aidevs.pl', apikey_file='/backup/2aidev/.apikeys'):
     task_api = load_apikeys(apikey_file)

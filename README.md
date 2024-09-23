@@ -1,4 +1,6 @@
-Create .apikeys file with yaml syntax:
+Create .apikeys file with yaml syntax to supply rest scripts.
 TASK_APIKEY: 'individual task key'
 OAI_APIKEY: 'secred OPENAI key'
-to supply rest scripts.
+
+Install OPENAI module with:
+pip install openai

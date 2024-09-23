@@ -22,19 +22,12 @@ try:
     modRespond = json.loads(request.text)
 
     print(f"Moderation API returned {modRespond['results']}")
-    # mod_result = list(map(lambda i: 1 if i['flagged'] else 0, mod_resp['results']))
-#    response = taskResponse.post_answer(token, answer)
-#    
-#    print(f"Odpowiedź dla zadania '{taskName}' to: {answer} ")
-#    print(response.status_code)
-#    print(response.text)
+    mod_result = list(map(lambda i: 1 if i['flagged'] else 0, modRespond['results']))
+    print(f"Flegged results: {mod_result}")
+    response = taskResponse.post_answer(token, {"answer": mod_result})
+    print(response.status_code)
+    print(response.text)
 
 except Exception as e:
     print(f"Error: {e}")
 
-#sendToModeration = requests.post('https://api.openai.com/v1/moderations', json=inputToMod, headers={'OPENAI_API_KEY':apiKey})
-#print(sendToModeration.text)
-
-#answerUrl = "https://zadania.aidevs.pl/answer/"+token
-#answerResponse = requests.post(answerUrl, json=answer)
-#print(answerResponse.text)    
