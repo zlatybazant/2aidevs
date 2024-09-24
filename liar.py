@@ -20,7 +20,7 @@ try:
 
     output = json.loads(response.text).get('answer')
 
-    print(f"Output: '{output}'")
+    print(f"Output: {output}")
 
     completion = client.chat.completions.create(
 	model="gpt-3.5-turbo",
