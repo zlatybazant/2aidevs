@@ -16,9 +16,6 @@ try:
     data = taskResponse.get_json(token)
     print(f"Dane dla zadania '{taskName}' to: {data}")
 
-
-    print(f"type:{type(data)} ")
-
     sentence = 'Hawaiian pizza'
     
     answer={ 'answer': get_embedding(sentence) }
