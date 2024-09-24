@@ -47,3 +47,13 @@ def post_answer(token, answer, answer_url='https://zadania.aidevs.pl/answer'):
         return response
     else:
         raise Exception(f"Failed to post JSON data: {response.status_code}, {response.text}")
+
+# Function to post DATA question
+def post_question(token, question, question_url='https://zadania.aidevs.pl/task'):
+    post_url = f"{question_url}/{token}"
+    
+    response = requests.post(post_url, data=question)
+    if response.status_code == 200:
+        return response
+    else:
+        raise Exception(f"Failed to post JSON data: {response.status_code}, {response.text}")
