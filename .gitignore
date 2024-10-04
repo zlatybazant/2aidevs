@@ -1,3 +1,5 @@
 .apikeys
 env.py
 mateusz.mp3
+data/
+docker_manager/qdrant_storage/

@@ -1,9 +1,9 @@
-import taskResponse, json, requests
+import taskResponse, json, requests, os, time, qdrant_client
 from openai import OpenAI
 from env import OPENAI_API_KEY
 from requests.exceptions import RequestException
-import time
 from docker_manager import ComposeManager
+from qdrant_client.models import Distance, VectorParams, PointStruct
 
 #def get_article_content(url, max_retries=5, backoff_factor=1):
 #    headers = { 'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/119.0' }
@@ -20,20 +20,41 @@ from docker_manager import ComposeManager
 #            time.sleep(backoff_factor * (2 ** attempt))
 
 
-#compose_manager = ComposeManager()
-#
-#compose_manager.start_services()
-#
-#compose_manager.status()
-#
-#compose_manager.stop_services()
+taskName = 'search'
+client = OpenAI(api_key=OPENAI_API_KEY)
+file_remote = 'https://unknow.news/archiwum.json'
+file_local = 'data/archiwum.json'
 
+def get_remote_file():
+    if not os.path.exists(file_local):
+        print(f'Downloading {file_remote} to {file_local}')
+        os.makedirs(os.path.dirname(file_local), exist_ok=True)
+        page = requests.get(file_remote)
+        with open(file_local, 'wb') as f:
+            f.write(page.content)
+    else:
+        print(f"File {file_local} already exists, skipping download")
+
+def connect_qdrant_collection(url='http://localhost:6333'):
+    
+    client = qdrant_client.QdrantClient(url=url)
+    try:
+        collection = client.get_collection("unknown_search")
+        print("qdrant: Collection 'unknown_search' exists, skipping creation")
+    except qdrant_client.http.exceptions.UnexpectedResponse:
+
+        print("qdrant: Collection 'unknown_search' does not exist, about to create it")
+        collection = client.create_collection(
+            collection_name="unknown_search",
+            vectors_config=VectorParams(size=1536, distance=Distance.COSINE)
+        )
 
 def main():
-    taskName = 'search'
-    client = OpenAI(api_key=OPENAI_API_KEY)
-    file_remote = 'https://unknow.news/archiwum.json'
-    file_local = 'data/archiwum.json'
+
+    compose_manager.stop_services()
+    #compose_manager = ComposeManager()
+    compose_manager.start_services()
+    compose_manager.status()
 
     try:
         token = taskResponse.get_task_token(taskName)
@@ -41,17 +62,10 @@ def main():
         data = taskResponse.get_json(token)
         print(f"Dane dla zadania '{taskName}' to: {data}")
 
+        get_remote_file()
 
-        if not os.path.exists(file_local):
-            print(f'Downloading {file_remote} to {file_local}')
-            os.makedirs(os.path.dirname(file_local), exist_ok=True)
-            page = requests.get(file_remote)
-            with open(file_local, 'wb') as f:
-                f.write(page.content)
-        else:
-            print(f"File {file_local} already exists, skipping download")
-        #articleLink = data.get('input')
-        #question  = data.get('question')
+        connect_qdrant_collection()
+
 
         #print(articleLink)
         #print(question)
