@@ -11,7 +11,7 @@ def get_article_content(url, max_retries=5, backoff_factor=1):
 
     for attempt in range(max_retries):
         try:
-            response = request.get(url, headers=headers, timeout=10)
+            response = requests.get(url, headers=headers, timeout=100)
             response.raise_for_status()
             return response.text
         except RequestException as e:
@@ -37,7 +37,7 @@ def main():
         print(articleLink)
         print(question)
 
-        articleContent = requests.get(articleLink)
+        articleContent = get_article_content(articleLink)
         print("doc retreived")
 	#body = json.loads(request.text)
 
