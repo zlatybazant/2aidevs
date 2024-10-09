@@ -2,7 +2,7 @@ import taskResponse, json, requests
 from openai import OpenAI
 from env import OPENAI_API_KEY
 from requests.exceptions import RequestException
-import time
+import time, re, sys
 
 
 
@@ -23,19 +23,6 @@ def get_article_content(url, max_retries=5, backoff_factor=1):
                 raise
             time.sleep(backoff_factor * (2 ** attempt))
 
-def find_answer(data, question):
-    for person in data:
-        full_name = f"{person['imie']} {person['nazwisko']}"
-        if full_name in question:
-            if "kolor" in question:
-                return person.get("ulubiony_kolor", "Nie znaleziono informacji o ulubionym kolorze.")
-            elif "jedzenie" in question or "potrawa" in question:
-                return person.get("ulubione_jedzenie", "Nie znaleziono informacji o ulubionym jedzeniu.")
-            elif "mieszka" in question:
-                o_mnie = person.get("o_mnie", "")
-                residence = o_mnie.split("Mieszkam w ")[-1].split(".")[0] if "Mieszkam w " in o_mnie else "Nie znaleziono informacji o miejscu zamieszkania."
-                return residence
-    return "Nie znaleziono odpowiedzi na pytanie."
 
 def main():
 
@@ -50,25 +37,51 @@ def main():
 
         print(f"question: {question}")
         urlContent = get_article_content(url)
-        #print(urlContent)
-        people_data  = json.loads(urlContent)
 
-        #completion = client.chat.completions.create(
-        #    model="gpt-3.5-turbo",
-        #    messages=[
-        #    {"role": "system", "content": f"Odpowiedz po polsku na pytanie zwiazane z tym kontekstem. Odpowiadaj zwięźle. Ogranicz długość odpowiedzi do 200 znaków:\n\n {urlContent}"},
-        #    {"role": "user", "content": f"Question is: {question}"}
-        #    ]
-        #)
-        answer = find_answer(people_data, question)
-        print(f"odpowiedz: {answer}")
+        urlContent = json.loads(urlContent)
 
-        #messageOutput = completion.choices[0].message.content
-        ###parsed_content = json.loads(message_content)
-        #print(f"OAI response: {messageOutput}")
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "Z otrzymanego pytania musisz zwrócić tylko imię i nazwisko w mianowniku. Nie przekazuj formy zdrobniałej. Gdy otrzymasz zdrobnienie imienia, musisz podać je  w formie podstawowej. Przekaż tylko dwa wyrazy - imię nazwisko. Nie odpowiadaj na pytanie."},
+                {"role": "user", "content": question}
+            ]
+        )
+        firstNameAI, lastNameAI = completion.choices[0].message.content.split()
+        
+        print(f"AI names: {firstNameAI}, {lastNameAI} ") 
+
+        firstName = []
+        lastName = []
+        personInfo = []
+
+        for person in urlContent:
+            firstName = person['imie']
+            lastName = person['nazwisko']
+
+            if firstNameAI == firstName and lastNameAI == lastName:
+                print(f"Found record: {personInfo}")
+                print("found match: ", firstName, lastName)
+                personInfo = person
+                break
+        
+        if personInfo == []:
+            print(f"No person data received, names don't match: {firstName} {lastName} ")
+            sys.exit(1)
+                         
+
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": f"Dane szukanej osoby: {personInfo}, krótko odpowiedz na zadane pytanie."},
+                {"role": "user", "content": f"Pytanie: {question}"}
+            ]
+        )
+
+        answer = completion.choices[0].message.content
+        print(f"OAI response: {answer}")
         answer={ 'answer': answer }
-        #print(f"answer: {answer} ")
-        #response = taskResponse.post_answer(token, answer)
+        response = taskResponse.post_answer(token, answer)
         print(response.status_code)
         print(response.text)
 
