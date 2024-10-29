@@ -21,22 +21,23 @@ def get_article_content(url, max_retries=5, backoff_factor=1):
             if attempt + 1 == max_retries:
                 raise
             time.sleep(backoff_factor * (2 ** attempt))
+
 def summarize_person_data(person_data,client):
     summaries = []
-    for i in range(0, len(person_data), 10):
-        batch = " ".join(person_data[i:i+10])
-        try:
-            completion = client.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "Z każdego zdania, zwróć krótko tylko najważniejszą informacje. Wyniki nie mogą się powtarzać. Nie powielaj informacji. Może być użyta tylko raz . Nie wypisuj imienia."},
-                    {"role": "user", "content": batch}
-                ]
-            )
-            summaries.append(completion.choices[0].message.content)
-        except Exception as e:
-            print(f"Error during AI summarization: {e}")
-            continue
+    #for i in range(0, len(person_data), 1):
+        #batch = " ".join(person_data[i:i+1])
+    batch = " ".join(person_data)
+    try:
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "Twoim zadaniem jest zoptymalizować dostarczony tekst. <zasady_optymalizacji> Z każdego zdania kończącego się kropką, zwróć krótko tylko najważniejsze informacje opisując czasownikiem, rzeczownikiem i okolicznikiem miejca. Przykład: programuje JavaScript. Informacje wypisz po kropce. Nie dodawaj imienia osób do optymalizacji.</zasady_optymalizacji>"},
+                {"role": "user", "content": batch}
+            ]
+        )
+        summaries.append(completion.choices[0].message.content)
+    except Exception as e:
+        print(f"Error during AI summarization: {e}")
     return " ".join(summaries)
 
 def optimize_json_data(data, client):
